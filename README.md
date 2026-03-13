@@ -4,6 +4,8 @@
 
 ## 주요 기능 (Features)
 
+![use case diagram](images/use_case.png)
+
 ## 시작하기
 
 ### 요구사항
