@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} ({{ symbol }}) 검색 결과</title>
+</head>
+<body>
+    <h2>검색 결과</h2>
+    <p>종목명: {{ name }}</p>
+    <p>현재가: ${{ price }}</p>
+
+    <form action="/add" method="post">
+        <input type="hidden" name="symbol" value="{{ symbol }}">
+        <input type="hidden" name="name" value="{{ name }}">
+        <input type="hidden" name="price" value="{{ price }}">
+        <button type="submit">관심종목 등록</button>
+    </form>
+
+    <hr>
+    <h3>최신 뉴스</h3>
+    {% if news %}
+        {% for article in news %}
+        <div class="news-item">
+            <a href="/news?url={{ article.url | urlencode }}" target="_blank">
+                <strong>{{ article.title }}</strong>
+            </a>
+            <p>{{ article.snippet }}</p>
+            <small>{{ article.date }} | {{ article.publisher }}</small>
+
+            <!-- 즐겨찾기 버튼 -->
+            <form action="/favorite/add" method="post" style="display:inline;">
+                <input type="hidden" name="url"       value="{{ article.url }}">
+                <input type="hidden" name="title"     value="{{ article.title }}">
+                <input type="hidden" name="snippet"   value="{{ article.snippet }}">
+                <input type="hidden" name="date"      value="{{ article.date }}">
+                <input type="hidden" name="publisher" value="{{ article.publisher }}">
+                <button type="submit">★ 즐겨찾기</button>
+            </form>
+        </div>
+        <hr>
+        {% endfor %}
+    {% else %}
+        <p>관련 뉴스가 없습니다.</p>
+    {% endif %}
+</body>
+</html>
