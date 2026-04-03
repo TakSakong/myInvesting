@@ -5,6 +5,7 @@ import yfinance as yf
 from datetime import datetime
 import sqlite3
 import logging
+import time
 app = Flask(__name__)
 
 def get_db_connection():
@@ -72,6 +73,37 @@ def parse_date_strategy(pub_ts: str) -> str:
 
 # 전역 변수
 favorites = []  # 즐겨찾기한 뉴스 기사 목록
+stock_cache = {}  # Proxy Pattern 인메모리 캐시
+
+def get_stock_data(symbol):
+    """Proxy Caching Pattern: 야후 파이낸스 동기 병목을 줄이기 위한 10분 내부 캐싱 래퍼"""
+    # 1. 테스트 환경일 경우 목(Mock) 주입이 깨지지 않게 캐시 바이패스(우회)
+    if app.config.get("TESTING"):
+        stock = yf.Ticker(symbol)
+        return stock.info, (stock.news or [])
+
+    now = time.time()
+    CACHE_TIMEOUT = 600  # 10분 (600초)
+
+    # 2. 캐시 조회 (Hit)
+    if symbol in stock_cache:
+        cached_data, timestamp = stock_cache[symbol]
+        if now - timestamp < CACHE_TIMEOUT:
+            logging.info(f"캐시 적중(Cache Hit) - {symbol}")
+            return cached_data
+
+    # 3. 캐시 없음/만료 (Miss) -> 원본 서버 왕복 후 캐시에 담기
+    logging.info(f"캐시 미스(Cache Miss) - 외부 서버 연동 {symbol}")
+    try:
+        stock = yf.Ticker(symbol)
+        info = stock.info
+        raw_news = stock.news or []
+        stock_cache[symbol] = ((info, raw_news), now)
+        return info, raw_news
+    except Exception as e:
+        # 야후 서버 타임아웃 / 장애 방어용
+        logging.error(f"야후 파이낸스 API 오류: {e}")
+        return None, []
 
 @app.route("/")
 def index():
@@ -81,13 +113,12 @@ def index():
 def search():
     symbol = request.args.get("q").strip().upper()
 
-    stock = yf.Ticker(symbol)
-    info = stock.info
+    # Proxy Pattern을 통해 정보를 받아옴 (동기식 대기 단축)
+    info, raw_news = get_stock_data(symbol)
+    
     if not info or info.get("currency") != "USD":
         return "유효한 미국 주식 티커를 입력해주세요."
 
-    # Fetch latest news articles for this ticker
-    raw_news = stock.news or []
     news = []
     for article in raw_news:
         content = article.get("content", {})
