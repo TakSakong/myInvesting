@@ -1,6 +1,6 @@
 #app.py
 
-from flask import Flask, render_template, request, redirect, url_for, abort
+from flask import Flask, render_template, request, redirect, url_for, abort, g
 import yfinance as yf
 from datetime import datetime
 import sqlite3
@@ -8,12 +8,19 @@ import logging
 app = Flask(__name__)
 
 def get_db_connection():
-    if app.config.get("TESTING"):
-        conn = sqlite3.connect('test_stocks.db', check_same_thread=False)
-    else:
-        conn = sqlite3.connect('stocks.db', check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+    if 'db' not in g:
+        if app.config.get("TESTING"):
+            g.db = sqlite3.connect('test_stocks.db', check_same_thread=False)
+        else:
+            g.db = sqlite3.connect('stocks.db', check_same_thread=False)
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
 
 def init_db():
     conn = get_db_connection()
@@ -26,7 +33,6 @@ def init_db():
         )
     ''')
     conn.commit()
-    conn.close()
 
 with app.app_context():
     init_db()
@@ -34,7 +40,6 @@ with app.app_context():
 def get_all_stocks():
     conn = get_db_connection()
     stocks = conn.execute('SELECT * FROM stocks').fetchall()
-    conn.close()
     return [dict(row) for row in stocks]
 
 def parse_date_strategy(pub_ts: str) -> str:
@@ -141,8 +146,6 @@ def add():
         conn.commit()
     except sqlite3.IntegrityError:
         pass  # ignore duplicates
-    finally:
-        conn.close()
         
     stocks = get_all_stocks()
     return render_template("index.html", stocks=stocks, favorites=favorites)
@@ -179,7 +182,6 @@ def delete():
     conn = get_db_connection()
     conn.execute('DELETE FROM stocks WHERE symbol = ?', (symbol,))
     conn.commit()
-    conn.close()
 
     stocks = get_all_stocks()
     # index 페이지로 리디렉션
