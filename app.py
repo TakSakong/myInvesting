@@ -125,10 +125,19 @@ def add():
     name   = request.form.get("name")
     price  = request.form.get("price")
     
+    # Guard Clause (방어막 패턴): 서버 측 입력값 이중 검증
+    if not symbol or not name or not price:
+        abort(400, "필수 항목(symbol, name, price)이 누락되었습니다.")
+        
+    try:
+        parsed_price = float(price)
+    except (ValueError, TypeError):
+        abort(400, "잘못된 가격 형식입니다. 숫자를 입력해야 합니다.")
+    
     conn = get_db_connection()
     try:
         conn.execute('INSERT INTO stocks (symbol, name, price) VALUES (?, ?, ?)',
-                     (symbol, name, float(price)))
+                     (symbol, name, parsed_price))
         conn.commit()
     except sqlite3.IntegrityError:
         pass  # ignore duplicates
