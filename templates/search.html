@@ -19,7 +19,7 @@
             </div>
             <div class="stock-actions">
                 <span class="stock-price">${{ price }}</span>
-                <form action="/add" method="post" style="display:inline;">
+                <form action="/add" method="post" style="display:inline;" onsubmit="return validateStockForm(this);">
                     <input type="hidden" name="symbol" value="{{ symbol }}">
                     <input type="hidden" name="name" value="{{ name }}">
                     <input type="hidden" name="price" value="{{ price }}">
@@ -57,5 +57,18 @@
             </div>
         {% endif %}
     </div>
+
+    <!-- Client-side Dual Validation HTML/JS -->
+    <script>
+        function validateStockForm(form) {
+            const price = form.price.value;
+            // 프론트엔드 레벨에서 빈칸이거나 올바른 숫자 형식이 아닌지 확인합니다.
+            if (!price || isNaN(parseFloat(price)) || !isFinite(price)) {
+                alert("가격 정보가 올바르지 않아 추가할 수 없습니다.");
+                return false; 
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>
