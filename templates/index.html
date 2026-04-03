@@ -4,51 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>myInvesting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>hello this is myInvesting!!</h1>
-    <form action="/search" method="get">
-        <input type="text" name="q" placeholder="주식 티커를 검색하세요.">
-        <button type="submit">검색</button>
-    </form>
+    <div class="container">
+        <h1>myInvesting 데시보드</h1>
+        
+        <form action="/search" method="get" class="search-form">
+            <input type="text" name="q" placeholder="주식 티커를 검색하세요." required>
+            <button type="submit" class="btn btn-primary">검색</button>
+        </form>
 
-    {% if stocks %}
         <h2>관심 종목</h2>
-        <ul>
-            {% for stock in stocks %}
-                <li>
-                    {{ stock.name }} ({{ stock.symbol }}) - ${{ stock.price }}
-                    <form action="/delete" method="post" style="display:inline;">
-                        <input type="hidden" name="symbol" value="{{ stock.symbol }}">
-                        <button type="submit">삭제</button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>관심 종목이 없습니다.</p>
-    {% endif %}
+        {% if stocks %}
+            <ul class="card-list">
+                {% for stock in stocks %}
+                    <li class="card stock-item">
+                        <div class="stock-info">
+                            <strong>{{ stock.name }}</strong>
+                            <span>{{ stock.symbol }}</span>
+                        </div>
+                        <div class="stock-actions">
+                            <span class="stock-price">${{ stock.price }}</span>
+                            <form action="/delete" method="post" style="display:inline;">
+                                <input type="hidden" name="symbol" value="{{ stock.symbol }}">
+                                <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-state">
+                <p>관심 종목이 없습니다.</p>
+            </div>
+        {% endif %}
 
-    <hr>
-    <h2>즐겨찾기 기사</h2>
-    {% if favorites %}
-        {% for article in favorites %}
-        <div class="favorite-item">
-            <a href="/news?url={{ article.url | urlencode }}" target="_blank">
-                <strong>{{ article.title }}</strong>
-            </a>
-            <p>{{ article.snippet }}</p>
-            <small>{{ article.date }} | {{ article.publisher }}</small>
-            <form action="/favorite/delete" method="post" style="display:inline;">
-                <input type="hidden" name="url" value="{{ article.url }}">
-                <button type="submit">☆ 즐겨찾기 취소</button>
-            </form>
-        </div>
-        <hr>
-        {% endfor %}
-    {% else %}
-        <p>즐겨찾기한 기사가 없습니다.</p>
-    {% endif %}
-
+        <h2>즐겨찾기 기사</h2>
+        {% if favorites %}
+            <div class="card-list">
+                {% for article in favorites %}
+                <div class="card news-item">
+                    <a href="/news?url={{ article.url | urlencode }}" target="_blank">
+                        <strong>{{ article.title }}</strong>
+                    </a>
+                    <p>{{ article.snippet }}</p>
+                    <div class="news-meta">
+                        <small>{{ article.date }} | {{ article.publisher }}</small>
+                        <form action="/favorite/delete" method="post" style="display:inline;">
+                            <input type="hidden" name="url" value="{{ article.url }}">
+                            <button type="submit" class="btn btn-danger btn-sm">☆ 즐겨찾기 취소</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>즐겨찾기한 기사가 없습니다.</p>
+            </div>
+        {% endif %}
+    </div>
 </body>
 </html>
