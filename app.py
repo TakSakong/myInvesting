@@ -3,17 +3,47 @@
 from flask import Flask, render_template, request, redirect, url_for, abort
 import yfinance as yf
 from datetime import datetime
+import sqlite3
 
 app = Flask(__name__)
 
+def get_db_connection():
+    if app.config.get("TESTING"):
+        conn = sqlite3.connect('test_stocks.db', check_same_thread=False)
+    else:
+        conn = sqlite3.connect('stocks.db', check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS stocks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            symbol TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            price REAL NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+with app.app_context():
+    init_db()
+
+def get_all_stocks():
+    conn = get_db_connection()
+    stocks = conn.execute('SELECT * FROM stocks').fetchall()
+    conn.close()
+    return [dict(row) for row in stocks]
+
 # 전역 변수
-stocks = []
 favorites = []  # 즐겨찾기한 뉴스 기사 목록
 
 @app.route("/")
 def index():
+    stocks = get_all_stocks()
     return render_template("index.html", stocks=stocks, favorites=favorites)
-
 @app.route("/search") 
 def search():
     symbol = request.args.get("q").strip().upper()
@@ -69,9 +99,19 @@ def add():
     symbol = request.form.get("symbol")
     name   = request.form.get("name")
     price  = request.form.get("price")
-    stocks.append({"symbol": symbol, "name": name, "price": float(price)})
+    
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO stocks (symbol, name, price) VALUES (?, ?, ?)',
+                     (symbol, name, float(price)))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        pass  # ignore duplicates
+    finally:
+        conn.close()
+        
+    stocks = get_all_stocks()
     return render_template("index.html", stocks=stocks, favorites=favorites)
-
 
 @app.route("/favorite/add", methods=["POST"])
 def favorite_add():
@@ -86,6 +126,7 @@ def favorite_add():
             "date":      request.form.get("date", ""),
             "publisher": request.form.get("publisher", ""),
         })
+    stocks = get_all_stocks()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 
 
@@ -94,18 +135,21 @@ def favorite_delete():
     """기사를 즐겨찾기 목록에서 제거한다."""
     url = request.form.get("url", "")
     favorites[:] = [f for f in favorites if f["url"] != url]
+    stocks = get_all_stocks()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 
 @app.route("/delete", methods=["POST"])
 def delete():
     symbol = request.form.get("symbol")
 
-    # stocks 배열에서 해당 symbol을 가진 주식 삭제
-    global stocks  # 전역 변수 stocks를 수정하기 위해 global 선언
-    stocks = [stock for stock in stocks if stock["symbol"] != symbol]
+    conn = get_db_connection()
+    conn.execute('DELETE FROM stocks WHERE symbol = ?', (symbol,))
+    conn.commit()
+    conn.close()
 
+    stocks = get_all_stocks()
     # index 페이지로 리디렉션
-    return render_template("index.html", stocks=stocks)
+    return render_template("index.html", stocks=stocks, favorites=favorites)
  
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

@@ -36,6 +36,13 @@ MOCK_NEWS = [
 @pytest.fixture
 def client():
     app.config["TESTING"] = True
+    from app import init_db, get_db_connection
+    with app.app_context():
+        init_db()
+        conn = get_db_connection()
+        conn.execute("DELETE FROM stocks")
+        conn.commit()
+        conn.close()
     with app.test_client() as client:
         yield client
 
