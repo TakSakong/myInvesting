@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ name }} ({{ symbol }}) 검색 결과</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
     <div class="container">
-        <h1 style="text-align: left; margin-bottom: 1rem;"><a href="/" style="text-decoration:none; color: var(--text-main);">← 홈으로</a></h1>
-        
+        <h1 style="text-align: left; margin-bottom: 1rem;"><a href="/"
+                style="text-decoration:none; color: var(--text-main);">← 홈으로</a></h1>
+
         <h2>종목 검색 결과</h2>
-        
+
         <div class="card stock-item" style="margin-bottom: 2rem;">
             <div class="stock-info">
                 <strong>{{ name }}</strong>
@@ -30,31 +33,31 @@
 
         <h2>최신 관련 뉴스</h2>
         {% if news %}
-            <div class="card-list">
-                {% for article in news %}
-                <div class="card news-item">
-                    <a href="/news?url={{ article.url | urlencode }}" target="_blank">
-                        <strong>{{ article.title }}</strong>
-                    </a>
-                    <p>{{ article.snippet }}</p>
-                    <div class="news-meta">
-                        <small>{{ article.date }} | {{ article.publisher }}</small>
-                        <form action="/favorite/add" method="post" style="display:inline;">
-                            <input type="hidden" name="url"       value="{{ article.url }}">
-                            <input type="hidden" name="title"     value="{{ article.title }}">
-                            <input type="hidden" name="snippet"   value="{{ article.snippet }}">
-                            <input type="hidden" name="date"      value="{{ article.date }}">
-                            <input type="hidden" name="publisher" value="{{ article.publisher }}">
-                            <button type="submit" class="btn btn-primary btn-sm">★ 즐겨찾기</button>
-                        </form>
-                    </div>
+        <div class="card-list">
+            {% for article in news %}
+            <div class="card news-item">
+                <a href="/news?url={{ article.url | urlencode }}" target="_blank">
+                    <strong>{{ article.title }}</strong>
+                </a>
+                <p>{{ article.snippet }}</p>
+                <div class="news-meta">
+                    <small>{{ article.date }} | {{ article.publisher }}</small>
+                    <form action="/favorite/add" method="post" style="display:inline;">
+                        <input type="hidden" name="url" value="{{ article.url }}">
+                        <input type="hidden" name="title" value="{{ article.title }}">
+                        <input type="hidden" name="snippet" value="{{ article.snippet }}">
+                        <input type="hidden" name="date" value="{{ article.date }}">
+                        <input type="hidden" name="publisher" value="{{ article.publisher }}">
+                        <button type="submit" class="btn btn-primary btn-sm">★ 즐겨찾기</button>
+                    </form>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <div class="empty-state">
-                <p>관련 뉴스가 없습니다.</p>
-            </div>
+        <div class="empty-state">
+            <p>관련 뉴스가 없습니다.</p>
+        </div>
         {% endif %}
     </div>
 
@@ -65,10 +68,11 @@
             // 프론트엔드 레벨에서 빈칸이거나 올바른 숫자 형식이 아닌지 확인합니다.
             if (!price || isNaN(parseFloat(price)) || !isFinite(price)) {
                 alert("가격 정보가 올바르지 않아 추가할 수 없습니다.");
-                return false; 
+                return false;
             }
             return true;
         }
     </script>
 </body>
+
 </html>

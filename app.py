@@ -6,6 +6,7 @@ from datetime import datetime
 import sqlite3
 import logging
 import time
+from repository import StockRepository
 app = Flask(__name__)
 
 def get_db_connection():
@@ -17,6 +18,9 @@ def get_db_connection():
         g.db.row_factory = sqlite3.Row
     return g.db
 
+def get_stock_repo():
+    return StockRepository(get_db_connection())
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = g.pop('db', None)
@@ -24,24 +28,10 @@ def close_connection(exception):
         db.close()
 
 def init_db():
-    conn = get_db_connection()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS stocks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            symbol TEXT UNIQUE NOT NULL,
-            name TEXT NOT NULL,
-            price REAL NOT NULL
-        )
-    ''')
-    conn.commit()
+    get_stock_repo().create_table()
 
 with app.app_context():
     init_db()
-
-def get_all_stocks():
-    conn = get_db_connection()
-    stocks = conn.execute('SELECT * FROM stocks').fetchall()
-    return [dict(row) for row in stocks]
 
 def parse_date_strategy(pub_ts: str) -> str:
     """Strategy Pattern(전략 패턴) 및 Chain of Responsibility를 활용한 날짜 파싱 로직"""
@@ -107,7 +97,7 @@ def get_stock_data(symbol):
 
 @app.route("/")
 def index():
-    stocks = get_all_stocks()
+    stocks = get_stock_repo().get_all()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 @app.route("/search") 
 def search():
@@ -170,15 +160,10 @@ def add():
     except (ValueError, TypeError):
         abort(400, "잘못된 가격 형식입니다. 숫자를 입력해야 합니다.")
     
-    conn = get_db_connection()
-    try:
-        conn.execute('INSERT INTO stocks (symbol, name, price) VALUES (?, ?, ?)',
-                     (symbol, name, parsed_price))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        pass  # ignore duplicates
+    repo = get_stock_repo()
+    repo.add(symbol, name, parsed_price)
         
-    stocks = get_all_stocks()
+    stocks = repo.get_all()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 
 @app.route("/favorite/add", methods=["POST"])
@@ -194,7 +179,7 @@ def favorite_add():
             "date":      request.form.get("date", ""),
             "publisher": request.form.get("publisher", ""),
         })
-    stocks = get_all_stocks()
+    stocks = get_stock_repo().get_all()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 
 
@@ -203,18 +188,17 @@ def favorite_delete():
     """기사를 즐겨찾기 목록에서 제거한다."""
     url = request.form.get("url", "")
     favorites[:] = [f for f in favorites if f["url"] != url]
-    stocks = get_all_stocks()
+    stocks = get_stock_repo().get_all()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 
 @app.route("/delete", methods=["POST"])
 def delete():
     symbol = request.form.get("symbol")
 
-    conn = get_db_connection()
-    conn.execute('DELETE FROM stocks WHERE symbol = ?', (symbol,))
-    conn.commit()
+    repo = get_stock_repo()
+    repo.delete(symbol)
 
-    stocks = get_all_stocks()
+    stocks = repo.get_all()
     # index 페이지로 리디렉션
     return render_template("index.html", stocks=stocks, favorites=favorites)
  
