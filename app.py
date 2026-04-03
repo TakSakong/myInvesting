@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, abort
 import yfinance as yf
 from datetime import datetime
 import sqlite3
-
+import logging
 app = Flask(__name__)
 
 def get_db_connection():
@@ -37,6 +37,34 @@ def get_all_stocks():
     conn.close()
     return [dict(row) for row in stocks]
 
+def parse_date_strategy(pub_ts: str) -> str:
+    """Strategy Pattern(전략 패턴) 및 Chain of Responsibility를 활용한 날짜 파싱 로직"""
+    if not pub_ts:
+        return ""
+    
+    # 처리 가능한 날짜 파싱 전략(Strategy) 목록
+    # 새로운 포맷이 생기면 이 리스트에 lambda 함수 하나만 추가하면 됩니다 (OCP 준수)
+    parsers = [
+        # 전략 1: ISO 8601 (예: "2026-03-19T09:00:00Z")
+        lambda t: datetime.fromisoformat(t.replace("Z", "+00:00")).strftime("%Y-%m-%d"),
+        # 전략 2: 영문 텍스트 포맷 (예: "Mar 19, 2026")
+        lambda t: datetime.strptime(t, "%b %d, %Y").strftime("%Y-%m-%d"),
+        # 전략 3: 슬래시 포맷 (예: "2026/03/19")
+        lambda t: datetime.strptime(t, "%Y/%m/%d").strftime("%Y-%m-%d"),
+        # Fallback 전략: 최소 10자 이상이면 단순히 맨 앞 10자리(YYYY-MM-DD 형식일 확률이 높음) 반환
+        lambda t: t[:10] if len(t) >= 10 else t
+    ]
+
+    for parse_func in parsers:
+        try:
+            return parse_func(pub_ts)
+        except (ValueError, TypeError):  # 구체적인 에러만 포착 (Fail-Fast)
+            continue
+            
+    # 모든 전략이 실패했을 경우 로깅 후 원본 텍스트 앞부분을 강제로 응답 (장애를 삼키지 않음)
+    logging.warning(f"알 수 없는 날짜 포맷이 발견되었습니다: {pub_ts}")
+    return pub_ts[:10]
+
 # 전역 변수
 favorites = []  # 즐겨찾기한 뉴스 기사 목록
 
@@ -59,11 +87,8 @@ def search():
     for article in raw_news:
         content = article.get("content", {})
         pub_ts = content.get("pubDate") or content.get("displayTime", "")
-        # pubDate may be an ISO string; fall back gracefully
-        try:
-            pub_date = datetime.fromisoformat(pub_ts.replace("Z", "+00:00")).strftime("%Y-%m-%d")
-        except Exception:
-            pub_date = pub_ts[:10] if pub_ts else ""
+        # 전략 패턴을 활용하여 날짜 파싱
+        pub_date = parse_date_strategy(pub_ts)
 
         summary_raw = content.get("summary", "")
         snippet = summary_raw[:150] + "..." if len(summary_raw) > 150 else summary_raw
