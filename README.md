@@ -8,9 +8,14 @@
 
 ## 2. Visual Demonstration
 
-| 관심종목 등록 및 홈에서 조회 | 뉴스 검색 및 조회 | 뉴스에서 관심종목 등록 |
-| :---: | :---: | :---: |
-| ![interests](images/interests.gif) | ![news](images/news.gif) | ![newsinterests](images/newsinterests.gif) |
+### 관심종목 등록 및 홈에서 조회
+![interests](images/interests.gif)
+
+### 뉴스 검색 및 조회
+![news](images/news.gif)
+
+### 뉴스에서 관심종목 등록
+![newsinterests](images/newsinterests.gif)
 
 ---
 
@@ -97,6 +102,7 @@ python app.py
 사실 파이썬을 활용해 웹을 만들어본 적은 없는데 이번 수업을 통해서 Flask를 알게 되었습니다. 공식 문서를 살펴본 결과 Flask는 파이썬 특성상 직관적인 코드 구조를 가지기 때문에 이를 활용해 이번 학기 개인 프로젝트를 진행해볼 생각입니다.
 </details>
 
+<details>
 <summary><b>260320 수업</b></summary>
 <br>
 소프트웨어설계 수업이나 SW테스팅 수업에서 배운 에자일 기법들에 평소 관심을 가지고 있었는데 이번 수업을 통해 개발자가 각 기능에 대한 테스트 케이스들을 찾고 이에 대한 테스트 코드들을 만든 후에 pytest를 통해서 각 기능들을 구현->테스트->구현->테스트 하는 방식으로 진행하면 기능의 동작을 보증하고 개발의 진행도를 어느정도 느낄 수 있으며 이는 엄청난 장점이라는 것을 느꼈습니다.
@@ -120,6 +126,6 @@ python app.py
 기존에는 API 기능 구현 자체에만 집중했습니다. 하지만 이제는 Docstrings를 통해 사용자에게 어떻게 사용하는지를 설명하고, 주석을 통해 왜 이런 코드를 작성했는지에 대해 고심해보게 되었습니다. 또한 이런 문서화를 응용해서 Swagger UI와 같은 API 문서를 자동으로 생성할 수 있다는 점을 새롭게 알게 되었습니다. 더불어, Sphinx를 이용해서 프로젝트의 공식 API 문서를 자동으로 생성하고 관리할 수 있다는 유용한 지식을 습득했습니다.
 </details>
 
-# 8. API documentation
+## 8. API documentation
 
 Links : https://taksakong.github.io/myInvesting/
