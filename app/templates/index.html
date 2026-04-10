@@ -8,7 +8,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>myInvesting 데시보드</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 style="margin-bottom: 0;">myInvesting 데시보드</h1>
+            <div>
+                <span style="margin-right: 1rem;">안녕하세요, <strong>{{ session['username'] }}</strong>님!</span>
+                <a href="/logout" class="btn btn-sm" style="border: 1px solid var(--border-color); color: var(--text-main);">로그아웃</a>
+            </div>
+        </div>
         
         <form action="/search" method="get" class="search-form">
             <input type="text" name="q" placeholder="주식 티커를 검색하세요." required>
@@ -20,10 +26,10 @@
             <ul class="card-list">
                 {% for stock in stocks %}
                     <li class="card stock-item">
-                        <div class="stock-info">
+                        <a href="/search?q={{ stock.symbol }}" class="stock-info" style="text-decoration: none; color: inherit; cursor: pointer; flex: 1;">
                             <strong>{{ stock.name }}</strong>
                             <span>{{ stock.symbol }}</span>
-                        </div>
+                        </a>
                         <div class="stock-actions">
                             <span class="stock-price">${{ stock.price }}</span>
                             <form action="/delete" method="post" style="display:inline;">

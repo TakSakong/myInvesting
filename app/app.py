@@ -1,15 +1,19 @@
 #app.py
 
-from flask import Flask, render_template, request, redirect, url_for, abort, g
+from flask import Flask, render_template, request, redirect, url_for, abort, g, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 import yfinance as yf
 from datetime import datetime
 import sqlite3
 import logging
 import time
 import os
+import secrets
+from functools import wraps
 from flasgger import Swagger
-from .repository import StockRepository
+from .repository import UserRepository, StockRepository, FavoriteRepository
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)
 Swagger(app)
 
 def get_db_connection():
@@ -27,31 +31,40 @@ def get_db_connection():
         g.db.row_factory = sqlite3.Row
     return g.db
 
+def get_user_repo():
+    return UserRepository(get_db_connection())
+
 def get_stock_repo():
-    """Retrieves an instance of StockRepository.
-    
-    Returns:
-        StockRepository: A repository instance initialized with the current database connection.
-    """
+    """Retrieves an instance of StockRepository."""
     return StockRepository(get_db_connection())
+
+def get_favorite_repo():
+    return FavoriteRepository(get_db_connection())
 
 @app.teardown_appcontext
 def close_connection(exception):
-    """Closes the database connection at the end of the request.
-    
-    Args:
-        exception (Exception | None): Any exception that occurred during the request.
-    """
+    """Closes the database connection at the end of the request."""
     db = g.pop('db', None)
     if db is not None:
         db.close()
 
 def init_db():
     """Initializes the database by creating necessary tables."""
-    get_stock_repo().create_table()
+    conn = get_db_connection()
+    UserRepository(conn).create_table()
+    StockRepository(conn).create_table()
+    FavoriteRepository(conn).create_table()
 
 with app.app_context():
     init_db()
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def parse_date_strategy(pub_ts: str) -> str:
     """Parses a date string using the Strategy Pattern and Chain of Responsibility.
@@ -93,8 +106,53 @@ def parse_date_strategy(pub_ts: str) -> str:
     return pub_ts[:10]
 
 # 전역 변수
-favorites = []  # 즐겨찾기한 뉴스 기사 목록
 stock_cache = {}  # Proxy Pattern 인메모리 캐시
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if not username or not password:
+            flash("아이디와 비밀번호를 모두 입력해주세요.", "error")
+            return redirect(url_for('register'))
+            
+        hashed_pw = generate_password_hash(password)
+        repo = get_user_repo()
+        user_id = repo.add_user(username, hashed_pw)
+        if user_id:
+            session['user_id'] = user_id
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            flash("이미 존재하는 아이디입니다.", "error")
+            return redirect(url_for('register'))
+            
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        repo = get_user_repo()
+        user = repo.get_user_by_username(username)
+        
+        if user and check_password_hash(user['password_hash'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            return redirect(url_for('index'))
+        else:
+            flash("아이디 혹은 비밀번호가 올바르지 않습니다.", "error")
+            return redirect(url_for('login'))
+            
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 def get_stock_data(symbol):
     """Fetches stock data using a Proxy Caching Pattern.
@@ -113,7 +171,11 @@ def get_stock_data(symbol):
     # 1. 테스트 환경일 경우 목(Mock) 주입이 깨지지 않게 캐시 바이패스(우회)
     if app.config.get("TESTING"):
         stock = yf.Ticker(symbol)
-        return stock.info, (stock.news or [])
+        hist = stock.history(period="1mo")
+        dates = hist.index.strftime('%Y-%m-%d').tolist() if not hist.empty else []
+        prices = [round(p, 2) for p in hist['Close'].tolist()] if not hist.empty else []
+        chart_data = {"dates": dates, "prices": prices}
+        return stock.info, (stock.news or []), chart_data
 
     now = time.time()
     CACHE_TIMEOUT = 600  # 10분 (600초)
@@ -131,30 +193,29 @@ def get_stock_data(symbol):
         stock = yf.Ticker(symbol)
         info = stock.info
         raw_news = stock.news or []
-        stock_cache[symbol] = ((info, raw_news), now)
-        return info, raw_news
+        
+        hist = stock.history(period="1mo")
+        dates = hist.index.strftime('%Y-%m-%d').tolist() if not hist.empty else []
+        prices = [round(p, 2) for p in hist['Close'].tolist()] if not hist.empty else []
+        chart_data = {"dates": dates, "prices": prices}
+        
+        stock_cache[symbol] = ((info, raw_news, chart_data), now)
+        return info, raw_news, chart_data
     except Exception as e:
         # 야후 서버 타임아웃 / 장애 방어용
         logging.error(f"야후 파이낸스 API 오류: {e}")
-        return None, []
+        return None, [], {}
 
 @app.route("/")
+@login_required
 def index():
-    """Renders the main dashboard page.
-    
-    Retrieves all saved stocks from the database and the global favorites list,
-    then renders the index template.
-    
-    Returns:
-        str: The rendered HTML content for the dashboard.
-    ---
-    responses:
-      200:
-        description: A successful dashboard rendering
-    """
-    stocks = get_stock_repo().get_all()
+    """Renders the main dashboard page."""
+    user_id = session['user_id']
+    stocks = get_stock_repo().get_all_by_user(user_id)
+    favorites = get_favorite_repo().get_all_by_user(user_id)
     return render_template("index.html", stocks=stocks, favorites=favorites)
-@app.route("/search") 
+@app.route("/search")
+@login_required
 def search():
     """Handles stock search and displays relevant news and information.
     
@@ -178,7 +239,7 @@ def search():
     symbol = request.args.get("q").strip().upper()
 
     # Proxy Pattern을 통해 정보를 받아옴 (동기식 대기 단축)
-    info, raw_news = get_stock_data(symbol)
+    info, raw_news, chart_data = get_stock_data(symbol)
     
     if not info or info.get("currency") != "USD":
         return "유효한 미국 주식 티커를 입력해주세요."
@@ -208,7 +269,8 @@ def search():
                             name=info.get("longName"),
                             price=info.get("currentPrice"),
                             symbol=symbol,
-                            news=news)
+                            news=news,
+                            chart_data=chart_data)
 
 
 @app.route("/news")
@@ -242,6 +304,7 @@ def news_detail():
     return redirect(url)
 
 @app.route("/add", methods=["POST"])
+@login_required
 def add():
     """Adds a new stock to the database.
     
@@ -292,12 +355,11 @@ def add():
         abort(400, "잘못된 가격 형식입니다. 숫자를 입력해야 합니다.")
     
     repo = get_stock_repo()
-    repo.add(symbol, name, parsed_price)
-        
-    stocks = repo.get_all()
-    return render_template("index.html", stocks=stocks, favorites=favorites)
+    repo.add(session['user_id'], symbol, name, parsed_price)
+    return redirect(url_for('index'))
 
 @app.route("/favorite/add", methods=["POST"])
+@login_required
 def favorite_add():
     """Adds a given news article to the global favorites list.
     
@@ -331,20 +393,16 @@ def favorite_add():
         description: Updated dashboard HTML.
     """
     url = request.form.get("url", "")
-    # 중복 방지
-    if not any(f["url"] == url for f in favorites):
-        favorites.append({
-            "url":       url,
-            "title":     request.form.get("title", ""),
-            "snippet":   request.form.get("snippet", ""),
-            "date":      request.form.get("date", ""),
-            "publisher": request.form.get("publisher", ""),
-        })
-    stocks = get_stock_repo().get_all()
-    return render_template("index.html", stocks=stocks, favorites=favorites)
-
+    title = request.form.get("title", "")
+    snippet = request.form.get("snippet", "")
+    date = request.form.get("date", "")
+    publisher = request.form.get("publisher", "")
+    
+    get_favorite_repo().add(session['user_id'], url, title, snippet, date, publisher)
+    return redirect(url_for('index'))
 
 @app.route("/favorite/delete", methods=["POST"])
+@login_required
 def favorite_delete():
     """Deletes a news article from the global favorites list.
     
@@ -365,11 +423,11 @@ def favorite_delete():
         description: Updated dashboard HTML.
     """
     url = request.form.get("url", "")
-    favorites[:] = [f for f in favorites if f["url"] != url]
-    stocks = get_stock_repo().get_all()
-    return render_template("index.html", stocks=stocks, favorites=favorites)
+    get_favorite_repo().delete(session['user_id'], url)
+    return redirect(url_for('index'))
 
 @app.route("/delete", methods=["POST"])
+@login_required
 def delete():
     """Deletes a stock from the database using its symbol.
     
@@ -390,11 +448,10 @@ def delete():
     symbol = request.form.get("symbol")
 
     repo = get_stock_repo()
-    repo.delete(symbol)
+    repo.delete(session['user_id'], symbol)
 
-    stocks = repo.get_all()
     # index 페이지로 리디렉션
-    return render_template("index.html", stocks=stocks, favorites=favorites)
+    return redirect(url_for('index'))
  
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

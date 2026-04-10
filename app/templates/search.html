@@ -10,8 +10,14 @@
 
 <body>
     <div class="container">
-        <h1 style="text-align: left; margin-bottom: 1rem;"><a href="/"
-                style="text-decoration:none; color: var(--text-main);">← 홈으로</a></h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h1 style="text-align: left; margin-bottom: 0;"><a href="/"
+                    style="text-decoration:none; color: var(--text-main);">← 홈으로</a></h1>
+            <div>
+                <span style="margin-right: 1rem;"><strong>{{ session['username'] }}</strong>님</span>
+                <a href="/logout" class="btn btn-sm" style="border: 1px solid var(--border-color); color: var(--text-main);">로그아웃</a>
+            </div>
+        </div>
 
         <h2>종목 검색 결과</h2>
 
@@ -30,6 +36,57 @@
                 </form>
             </div>
         </div>
+
+        {% if chart_data and chart_data.prices %}
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-top: 0;">최근 1개월 주가 추이</h3>
+            <div style="height: 300px;">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            const dates = {{ chart_data.dates|tojson }};
+            const prices = {{ chart_data.prices|tojson }};
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '종가 (Close)',
+                        data: prices,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 6 }
+                        },
+                        y: {
+                            ticks: {
+                                callback: function(value) { return '$' + value; }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+        {% endif %}
 
         <h2>최신 관련 뉴스</h2>
         {% if news %}
