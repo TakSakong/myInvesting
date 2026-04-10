@@ -59,7 +59,7 @@
 
 ## 6. Getting Started Guide
 
-### 1.. Clone the repository
+### 1. Clone the repository
 ```bash
 git clone https://github.com/TakSakong/myInvesting.git
 cd myInvesting
@@ -89,7 +89,7 @@ python app.py
 
 ---
 
-## ㅋ7. Lessons Learned & Challenges
+## 7. Lessons Learned & Challenges
 
 <details>
 <summary><b>260327 수업</b></summary>
