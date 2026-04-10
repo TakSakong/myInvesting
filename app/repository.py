@@ -112,3 +112,71 @@ class FavoriteRepository:
     def delete(self, user_id, url):
         self.conn.execute('DELETE FROM favorites WHERE user_id = ? AND url = ?', (user_id, url))
         self.conn.commit()
+
+class DiscussionRepository:
+    """A repository for handling discussion posts and comments."""
+    def __init__(self, db_connection):
+        self.conn = db_connection
+
+    def create_table(self):
+        self.conn.execute('''
+            CREATE TABLE IF NOT EXISTS posts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                stock_symbol TEXT NOT NULL,
+                user_id INTEGER NOT NULL,
+                content TEXT NOT NULL,
+                created_at DATETIME DEFAULT (datetime('now', 'localtime')),
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        self.conn.execute('''
+            CREATE TABLE IF NOT EXISTS comments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                post_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                content TEXT NOT NULL,
+                created_at DATETIME DEFAULT (datetime('now', 'localtime')),
+                FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        self.conn.commit()
+
+    def add_post(self, stock_symbol, user_id, content):
+        self.conn.execute('''
+            INSERT INTO posts (stock_symbol, user_id, content) 
+            VALUES (?, ?, ?)
+        ''', (stock_symbol.strip().upper(), user_id, content))
+        self.conn.commit()
+
+    def add_comment(self, post_id, user_id, content):
+        self.conn.execute('''
+            INSERT INTO comments (post_id, user_id, content) 
+            VALUES (?, ?, ?)
+        ''', (post_id, user_id, content))
+        self.conn.commit()
+
+    def get_posts_by_symbol(self, stock_symbol):
+        # Join posts with users
+        posts_rows = self.conn.execute('''
+            SELECT p.id, p.content, p.created_at, u.username 
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.stock_symbol = ?
+            ORDER BY p.created_at DESC
+        ''', (stock_symbol.strip().upper(),)).fetchall()
+        
+        posts = [dict(row) for row in posts_rows]
+        
+        # Populate comments for each post
+        for post in posts:
+            comments_rows = self.conn.execute('''
+                SELECT c.id, c.content, c.created_at, u.username 
+                FROM comments c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.post_id = ?
+                ORDER BY c.created_at ASC
+            ''', (post['id'],)).fetchall()
+            post['comments'] = [dict(crow) for crow in comments_rows]
+            
+        return posts

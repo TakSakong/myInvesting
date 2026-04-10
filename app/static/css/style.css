@@ -223,3 +223,135 @@ input[type="text"]:focus {
   border-radius: 0.75rem;
   border: 2px dashed var(--border-color);
 }
+
+/* Split Layout for Grid */
+.split-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .split-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.left-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.right-col {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+  border-left: 1px solid var(--border-color);
+  padding-left: 2rem;
+}
+
+@media (max-width: 768px) {
+  .right-col {
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    padding-left: 0;
+    padding-top: 2rem;
+  }
+}
+
+/* Discussion Board Classes */
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.post-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.post-item {
+  margin-bottom: 1.5rem;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.post-author {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.post-content {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--text-main);
+  white-space: pre-wrap;
+}
+
+.comment-list {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.comment-item {
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.comment-content {
+  color: var(--text-main);
+}
+
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.comment-form input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+.comment-form input:focus {
+  border-color: var(--primary);
+}

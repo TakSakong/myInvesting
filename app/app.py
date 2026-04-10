@@ -11,7 +11,7 @@ import os
 import secrets
 from functools import wraps
 from flasgger import Swagger
-from .repository import UserRepository, StockRepository, FavoriteRepository
+from .repository import UserRepository, StockRepository, FavoriteRepository, DiscussionRepository
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 Swagger(app)
@@ -41,6 +41,9 @@ def get_stock_repo():
 def get_favorite_repo():
     return FavoriteRepository(get_db_connection())
 
+def get_discussion_repo():
+    return DiscussionRepository(get_db_connection())
+
 @app.teardown_appcontext
 def close_connection(exception):
     """Closes the database connection at the end of the request."""
@@ -54,6 +57,7 @@ def init_db():
     UserRepository(conn).create_table()
     StockRepository(conn).create_table()
     FavoriteRepository(conn).create_table()
+    DiscussionRepository(conn).create_table()
 
 with app.app_context():
     init_db()
@@ -265,12 +269,15 @@ def search():
             "uuid":      content.get("id", ""),
         })
 
+    posts = get_discussion_repo().get_posts_by_symbol(symbol)
+
     return render_template('search.html',
                             name=info.get("longName"),
                             price=info.get("currentPrice"),
                             symbol=symbol,
                             news=news,
-                            chart_data=chart_data)
+                            chart_data=chart_data,
+                            posts=posts)
 
 
 @app.route("/news")
@@ -302,6 +309,25 @@ def news_detail():
     if not url:
         abort(400)
     return redirect(url)
+
+@app.route("/discussion/post", methods=["POST"])
+@login_required
+def add_post():
+    symbol = request.form.get("symbol")
+    content = request.form.get("content")
+    if symbol and content:
+        get_discussion_repo().add_post(symbol, session['user_id'], content)
+    return redirect(url_for('search', q=symbol))
+
+@app.route("/discussion/comment", methods=["POST"])
+@login_required
+def add_comment():
+    post_id = request.form.get("post_id")
+    symbol = request.form.get("symbol")
+    content = request.form.get("content")
+    if post_id and symbol and content:
+        get_discussion_repo().add_comment(post_id, session['user_id'], content)
+    return redirect(url_for('search', q=symbol))
 
 @app.route("/add", methods=["POST"])
 @login_required

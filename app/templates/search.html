@@ -9,8 +9,10 @@
 </head>
 
 <body>
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div class="split-container">
+        <!-- 좌측: 기존 검색 결과 -->
+        <div class="left-col">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h1 style="text-align: left; margin-bottom: 0;"><a href="/"
                     style="text-decoration:none; color: var(--text-main);">← 홈으로</a></h1>
             <div>
@@ -116,7 +118,58 @@
             <p>관련 뉴스가 없습니다.</p>
         </div>
         {% endif %}
-    </div>
+        </div> <!-- End of left-col -->
+
+        <!-- 우측: 종목 토론방 -->
+        <div class="right-col">
+            <h2>종목 토론방</h2>
+            
+            <form action="/discussion/post" method="post" class="post-form">
+                <input type="hidden" name="symbol" value="{{ symbol }}">
+                <textarea name="content" placeholder="이 종목에 대한 의견을 자유롭게 남겨보세요." required></textarea>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-primary btn-sm">글 쓰기</button>
+                </div>
+            </form>
+
+            <div class="post-list">
+                {% if posts %}
+                    {% for post in posts %}
+                    <div class="post-item">
+                        <div class="post-header">
+                            <span class="post-author">{{ post.username }}</span>
+                            <span>{{ post.created_at }}</span>
+                        </div>
+                        <div class="post-content">{{ post.content }}</div>
+                        
+                        <div class="comment-list">
+                            {% for comment in post.comments %}
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <span class="comment-author">{{ comment.username }}</span>
+                                    <span>{{ comment.created_at }}</span>
+                                </div>
+                                <div class="comment-content">{{ comment.content }}</div>
+                            </div>
+                            {% endfor %}
+                            
+                            <form action="/discussion/comment" method="post" class="comment-form">
+                                <input type="hidden" name="symbol" value="{{ symbol }}">
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <input type="text" name="content" placeholder="댓글을 남겨보세요..." required>
+                                <button type="submit" class="btn btn-primary btn-sm">등록</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>아직 작성된 글이 없습니다.<br>첫 번째 글을 남겨주세요!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div> <!-- End of right-col -->
+    </div> <!-- End of split-container -->
 
     <!-- Client-side Dual Validation HTML/JS -->
     <script>
