@@ -1,0 +1,100 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0
+rootdir: /Users/tak/Desktop/myInvesting
+collected 9 items
+
+tests/test_search.py EEEEEEEEE                                           [100%]
+
+==================================== ERRORS ====================================
+_ ERROR at setup of TestScenario1_SearchRendersSearchPage.test_valid_ticker_returns_200 _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario1_SearchRendersSearchPage.test_valid_ticker_renders_stock_info _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario1_SearchRendersSearchPage.test_invalid_ticker_returns_error_message _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario1_SearchRendersSearchPage.test_lowercase_ticker_is_uppercased _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario2_NewsDisplayedOnSearchPage.test_news_title_is_displayed _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario2_NewsDisplayedOnSearchPage.test_news_snippet_is_displayed _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario2_NewsDisplayedOnSearchPage.test_news_date_is_displayed _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario2_NewsDisplayedOnSearchPage.test_news_publisher_is_displayed _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+_ ERROR at setup of TestScenario2_NewsDisplayedOnSearchPage.test_no_news_shows_fallback_message _
+
+    @pytest.fixture
+    def client():
+        app.config["TESTING"] = True
+>       from app import init_db, get_db_connection
+E       ImportError: cannot import name 'init_db' from 'app' (/Users/tak/Desktop/myInvesting/app/__init__.py)
+
+tests/test_search.py:53: ImportError
+=========================== short test summary info ============================
+ERROR tests/test_search.py::TestScenario1_SearchRendersSearchPage::test_valid_ticker_returns_200
+ERROR tests/test_search.py::TestScenario1_SearchRendersSearchPage::test_valid_ticker_renders_stock_info
+ERROR tests/test_search.py::TestScenario1_SearchRendersSearchPage::test_invalid_ticker_returns_error_message
+ERROR tests/test_search.py::TestScenario1_SearchRendersSearchPage::test_lowercase_ticker_is_uppercased
+ERROR tests/test_search.py::TestScenario2_NewsDisplayedOnSearchPage::test_news_title_is_displayed
+ERROR tests/test_search.py::TestScenario2_NewsDisplayedOnSearchPage::test_news_snippet_is_displayed
+ERROR tests/test_search.py::TestScenario2_NewsDisplayedOnSearchPage::test_news_date_is_displayed
+ERROR tests/test_search.py::TestScenario2_NewsDisplayedOnSearchPage::test_news_publisher_is_displayed
+ERROR tests/test_search.py::TestScenario2_NewsDisplayedOnSearchPage::test_no_news_shows_fallback_message
+============================== 9 errors in 0.59s ===============================

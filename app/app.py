@@ -6,35 +6,66 @@ from datetime import datetime
 import sqlite3
 import logging
 import time
-from repository import StockRepository
+import os
+from flasgger import Swagger
+from .repository import StockRepository
 app = Flask(__name__)
+Swagger(app)
 
 def get_db_connection():
+    """Establishes or retrieves the SQLite database connection.
+    
+    Returns:
+        sqlite3.Connection: The active SQLite database connection for the current Flask app context.
+    """
     if 'db' not in g:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if app.config.get("TESTING"):
-            g.db = sqlite3.connect('test_stocks.db', check_same_thread=False)
+            g.db = sqlite3.connect(os.path.join(base_dir, 'test_stocks.db'), check_same_thread=False)
         else:
-            g.db = sqlite3.connect('stocks.db', check_same_thread=False)
+            g.db = sqlite3.connect(os.path.join(base_dir, 'stocks.db'), check_same_thread=False)
         g.db.row_factory = sqlite3.Row
     return g.db
 
 def get_stock_repo():
+    """Retrieves an instance of StockRepository.
+    
+    Returns:
+        StockRepository: A repository instance initialized with the current database connection.
+    """
     return StockRepository(get_db_connection())
 
 @app.teardown_appcontext
 def close_connection(exception):
+    """Closes the database connection at the end of the request.
+    
+    Args:
+        exception (Exception | None): Any exception that occurred during the request.
+    """
     db = g.pop('db', None)
     if db is not None:
         db.close()
 
 def init_db():
+    """Initializes the database by creating necessary tables."""
     get_stock_repo().create_table()
 
 with app.app_context():
     init_db()
 
 def parse_date_strategy(pub_ts: str) -> str:
-    """Strategy Pattern(전략 패턴) 및 Chain of Responsibility를 활용한 날짜 파싱 로직"""
+    """Parses a date string using the Strategy Pattern and Chain of Responsibility.
+    
+    Attempts to parse the publication date using several predefined formats. If all formatting 
+    strategies fail, it gracefully degrades by returning the first 10 characters.
+    
+    Args:
+        pub_ts (str): The raw publication timestamp string.
+        
+    Returns:
+        str: A parsed and formatted date string (YYYY-MM-DD), or the truncated original string 
+        if parsing is unresolvable.
+    """
     if not pub_ts:
         return ""
     
@@ -66,7 +97,19 @@ favorites = []  # 즐겨찾기한 뉴스 기사 목록
 stock_cache = {}  # Proxy Pattern 인메모리 캐시
 
 def get_stock_data(symbol):
-    """Proxy Caching Pattern: 야후 파이낸스 동기 병목을 줄이기 위한 10분 내부 캐싱 래퍼"""
+    """Fetches stock data using a Proxy Caching Pattern.
+    
+    Reduces synchronous load times and external API calls to Yahoo Finance 
+    by caching results in-memory. Bypasses the cache entirely when in TESTING mode.
+    
+    Args:
+        symbol (str): The stock ticker symbol.
+        
+    Returns:
+        tuple: A tuple containing:
+            - dict or None: The stock information dictionary.
+            - list: A list of related news articles.
+    """
     # 1. 테스트 환경일 경우 목(Mock) 주입이 깨지지 않게 캐시 바이패스(우회)
     if app.config.get("TESTING"):
         stock = yf.Ticker(symbol)
@@ -97,10 +140,41 @@ def get_stock_data(symbol):
 
 @app.route("/")
 def index():
+    """Renders the main dashboard page.
+    
+    Retrieves all saved stocks from the database and the global favorites list,
+    then renders the index template.
+    
+    Returns:
+        str: The rendered HTML content for the dashboard.
+    ---
+    responses:
+      200:
+        description: A successful dashboard rendering
+    """
     stocks = get_stock_repo().get_all()
     return render_template("index.html", stocks=stocks, favorites=favorites)
 @app.route("/search") 
 def search():
+    """Handles stock search and displays relevant news and information.
+    
+    Retrieves a stock ticker symbol from the query parameters, fetches its proxy-cached
+    data from Yahoo Finance, parses related news dates using a Strategy pattern, 
+    and renders the search results page.
+    
+    Returns:
+        str: The rendered HTML content for the search page or an error message if the ticker is invalid.
+    ---
+    parameters:
+      - name: q
+        in: query
+        type: string
+        required: true
+        description: The stock ticker symbol to search for
+    responses:
+      200:
+        description: The search results page or an error text
+    """
     symbol = request.args.get("q").strip().upper()
 
     # Proxy Pattern을 통해 정보를 받아옴 (동기식 대기 단축)
@@ -139,7 +213,29 @@ def search():
 
 @app.route("/news")
 def news_detail():
-    """Redirect the user to an external news article URL."""
+    """Redirects the user to an external news article URL.
+    
+    Args:
+        url (str, optional): The URL parameter passed in the query string.
+        
+    Returns:
+        werkzeug.wrappers.Response: A redirect response to the specified URL.
+        
+    Raises:
+        werkzeug.exceptions.BadRequest: If the URL parameter is missing.
+    ---
+    parameters:
+      - name: url
+        in: query
+        type: string
+        required: true
+        description: The URL string of the news article to redirect
+    responses:
+      302:
+        description: Redirects to the target URL
+      400:
+        description: Bad Request if URL is missing
+    """
     url = request.args.get("url", "")
     if not url:
         abort(400)
@@ -147,6 +243,41 @@ def news_detail():
 
 @app.route("/add", methods=["POST"])
 def add():
+    """Adds a new stock to the database.
+    
+    Validates form submissions utilizing a Guard Clause pattern to ensure 
+    no inputs are empty and that the parsed price is a valid numeric value.
+    
+    Returns:
+        str: The updated index page HTML containing the new stock.
+        
+    Raises:
+        werkzeug.exceptions.BadRequest: If there is a missing field or invalid price format.
+    ---
+    consumes:
+      - application/x-www-form-urlencoded
+    parameters:
+      - name: symbol
+        in: formData
+        type: string
+        required: true
+        description: Ticker symbol.
+      - name: name
+        in: formData
+        type: string
+        required: true
+        description: Company name.
+      - name: price
+        in: formData
+        type: number
+        required: true
+        description: Numeric price string.
+    responses:
+      200:
+        description: Updated dashboard HTML.
+      400:
+        description: Validation error.
+    """
     symbol = request.form.get("symbol")
     name   = request.form.get("name")
     price  = request.form.get("price")
@@ -168,7 +299,37 @@ def add():
 
 @app.route("/favorite/add", methods=["POST"])
 def favorite_add():
-    """기사를 즐겨찾기 목록에 추가한다. URL 기준 중복은 무시한다."""
+    """Adds a given news article to the global favorites list.
+    
+    Verifies that the article URL does not already exist in the favorites 
+    list before appending it to prevent duplicates.
+    
+    Returns:
+        str: The updated index page HTML incorporating the new favorite article.
+    ---
+    consumes:
+      - application/x-www-form-urlencoded
+    parameters:
+      - name: url
+        in: formData
+        type: string
+        required: true
+      - name: title
+        in: formData
+        type: string
+      - name: snippet
+        in: formData
+        type: string
+      - name: date
+        in: formData
+        type: string
+      - name: publisher
+        in: formData
+        type: string
+    responses:
+      200:
+        description: Updated dashboard HTML.
+    """
     url = request.form.get("url", "")
     # 중복 방지
     if not any(f["url"] == url for f in favorites):
@@ -185,7 +346,24 @@ def favorite_add():
 
 @app.route("/favorite/delete", methods=["POST"])
 def favorite_delete():
-    """기사를 즐겨찾기 목록에서 제거한다."""
+    """Deletes a news article from the global favorites list.
+    
+    Uses list comprehension to filter out the specified article based on its URL.
+    
+    Returns:
+        str: The updated index page HTML after the article is removed.
+    ---
+    consumes:
+      - application/x-www-form-urlencoded
+    parameters:
+      - name: url
+        in: formData
+        type: string
+        required: true
+    responses:
+      200:
+        description: Updated dashboard HTML.
+    """
     url = request.form.get("url", "")
     favorites[:] = [f for f in favorites if f["url"] != url]
     stocks = get_stock_repo().get_all()
@@ -193,6 +371,22 @@ def favorite_delete():
 
 @app.route("/delete", methods=["POST"])
 def delete():
+    """Deletes a stock from the database using its symbol.
+    
+    Returns:
+        str: The updated index page HTML after the deletion.
+    ---
+    consumes:
+      - application/x-www-form-urlencoded
+    parameters:
+      - name: symbol
+        in: formData
+        type: string
+        required: true
+    responses:
+      200:
+        description: Updated dashboard HTML.
+    """
     symbol = request.form.get("symbol")
 
     repo = get_stock_repo()
