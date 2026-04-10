@@ -108,3 +108,7 @@ python app.py
 <br>
 기존에는 API 기능 구현 자체에만 집중했습니다. 하지만 이제는 Docstrings를 통해 사용자에게 어떻게 사용하는지를 설명하고, 주석을 통해 왜 이런 코드를 작성했는지에 대해 고심해보게 되었습니다. 또한 이런 문서화를 응용해서 Swagger UI와 같은 API 문서를 자동으로 생성할 수 있다는 점을 새롭게 알게 되었습니다. 더불어, Sphinx를 이용해서 프로젝트의 공식 API 문서를 자동으로 생성하고 관리할 수 있다는 유용한 지식을 습득했습니다.
 </details>
+
+# 8. API documentation
+
+Links : https://taksakong.github.io/myInvesting/
