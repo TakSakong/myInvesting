@@ -1,6 +1,6 @@
-# myInvesting
+# Title : myInvesting
 
-### 주식 관련 유의미한 뉴스들을 수집해서 보여주는 개인 투자 보조 사이트.
+### SubTitle : 주식 관련 유의미한 뉴스들을 수집해서 보여주는 개인 투자 보조 사이트.
 
 ## 주요 기능 (Features)
 

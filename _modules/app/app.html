@@ -1,0 +1,541 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.app &mdash; myInvesting 1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=25ffd669"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/translations.js?v=afa94a99"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../genindex.html" />
+    <link rel="search" title="검색" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            myInvesting
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../app.html">app package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">myInvesting</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">모듈 코드</a></li>
+      <li class="breadcrumb-item active">app.app</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>app.app의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="c1">#app.py</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">abort</span><span class="p">,</span> <span class="n">g</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flasgger</span><span class="w"> </span><span class="kn">import</span> <span class="n">Swagger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">StockRepository</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">Swagger</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_db_connection">
+<a class="viewcode-back" href="../../app.html#app.app.get_db_connection">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_db_connection</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Establishes or retrieves the SQLite database connection.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        sqlite3.Connection: The active SQLite database connection for the current Flask app context.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;db&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g</span><span class="p">:</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TESTING&quot;</span><span class="p">):</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s1">&#39;test_stocks.db&#39;</span><span class="p">),</span> <span class="n">check_same_thread</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s1">&#39;stocks.db&#39;</span><span class="p">),</span> <span class="n">check_same_thread</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span>
+    <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="n">db</span></div>
+
+
+<div class="viewcode-block" id="get_stock_repo">
+<a class="viewcode-back" href="../../app.html#app.app.get_stock_repo">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_stock_repo</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves an instance of StockRepository.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        StockRepository: A repository instance initialized with the current database connection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">StockRepository</span><span class="p">(</span><span class="n">get_db_connection</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="close_connection">
+<a class="viewcode-back" href="../../app.html#app.app.close_connection">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">teardown_appcontext</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">close_connection</span><span class="p">(</span><span class="n">exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Closes the database connection at the end of the request.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        exception (Exception | None): Any exception that occurred during the request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;db&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="init_db">
+<a class="viewcode-back" href="../../app.html#app.app.init_db">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">init_db</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes the database by creating necessary tables.&quot;&quot;&quot;</span>
+    <span class="n">get_stock_repo</span><span class="p">()</span><span class="o">.</span><span class="n">create_table</span><span class="p">()</span></div>
+
+
+<span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">app_context</span><span class="p">():</span>
+    <span class="n">init_db</span><span class="p">()</span>
+
+<div class="viewcode-block" id="parse_date_strategy">
+<a class="viewcode-back" href="../../app.html#app.app.parse_date_strategy">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_date_strategy</span><span class="p">(</span><span class="n">pub_ts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses a date string using the Strategy Pattern and Chain of Responsibility.</span>
+<span class="sd">    </span>
+<span class="sd">    Attempts to parse the publication date using several predefined formats. If all formatting </span>
+<span class="sd">    strategies fail, it gracefully degrades by returning the first 10 characters.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        pub_ts (str): The raw publication timestamp string.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A parsed and formatted date string (YYYY-MM-DD), or the truncated original string </span>
+<span class="sd">        if parsing is unresolvable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pub_ts</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="c1"># 처리 가능한 날짜 파싱 전략(Strategy) 목록</span>
+    <span class="c1"># 새로운 포맷이 생기면 이 리스트에 lambda 함수 하나만 추가하면 됩니다 (OCP 준수)</span>
+    <span class="n">parsers</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># 전략 1: ISO 8601 (예: &quot;2026-03-19T09:00:00Z&quot;)</span>
+        <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;+00:00&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span>
+        <span class="c1"># 전략 2: 영문 텍스트 포맷 (예: &quot;Mar 19, 2026&quot;)</span>
+        <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;%b </span><span class="si">%d</span><span class="s2">, %Y&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span>
+        <span class="c1"># 전략 3: 슬래시 포맷 (예: &quot;2026/03/19&quot;)</span>
+        <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span>
+        <span class="c1"># Fallback 전략: 최소 10자 이상이면 단순히 맨 앞 10자리(YYYY-MM-DD 형식일 확률이 높음) 반환</span>
+        <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">10</span> <span class="k">else</span> <span class="n">t</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">parse_func</span> <span class="ow">in</span> <span class="n">parsers</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_func</span><span class="p">(</span><span class="n">pub_ts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>  <span class="c1"># 구체적인 에러만 포착 (Fail-Fast)</span>
+            <span class="k">continue</span>
+            
+    <span class="c1"># 모든 전략이 실패했을 경우 로깅 후 원본 텍스트 앞부분을 강제로 응답 (장애를 삼키지 않음)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;알 수 없는 날짜 포맷이 발견되었습니다: </span><span class="si">{</span><span class="n">pub_ts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pub_ts</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span></div>
+
+
+<span class="c1"># 전역 변수</span>
+<span class="n">favorites</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># 즐겨찾기한 뉴스 기사 목록</span>
+<span class="n">stock_cache</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Proxy Pattern 인메모리 캐시</span>
+
+<div class="viewcode-block" id="get_stock_data">
+<a class="viewcode-back" href="../../app.html#app.app.get_stock_data">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_stock_data</span><span class="p">(</span><span class="n">symbol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetches stock data using a Proxy Caching Pattern.</span>
+<span class="sd">    </span>
+<span class="sd">    Reduces synchronous load times and external API calls to Yahoo Finance </span>
+<span class="sd">    by caching results in-memory. Bypasses the cache entirely when in TESTING mode.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        symbol (str): The stock ticker symbol.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing:</span>
+<span class="sd">            - dict or None: The stock information dictionary.</span>
+<span class="sd">            - list: A list of related news articles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1. 테스트 환경일 경우 목(Mock) 주입이 깨지지 않게 캐시 바이패스(우회)</span>
+    <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TESTING&quot;</span><span class="p">):</span>
+        <span class="n">stock</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">Ticker</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stock</span><span class="o">.</span><span class="n">info</span><span class="p">,</span> <span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">news</span> <span class="ow">or</span> <span class="p">[])</span>
+
+    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">CACHE_TIMEOUT</span> <span class="o">=</span> <span class="mi">600</span>  <span class="c1"># 10분 (600초)</span>
+
+    <span class="c1"># 2. 캐시 조회 (Hit)</span>
+    <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">stock_cache</span><span class="p">:</span>
+        <span class="n">cached_data</span><span class="p">,</span> <span class="n">timestamp</span> <span class="o">=</span> <span class="n">stock_cache</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timestamp</span> <span class="o">&lt;</span> <span class="n">CACHE_TIMEOUT</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;캐시 적중(Cache Hit) - </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cached_data</span>
+
+    <span class="c1"># 3. 캐시 없음/만료 (Miss) -&gt; 원본 서버 왕복 후 캐시에 담기</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;캐시 미스(Cache Miss) - 외부 서버 연동 </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">stock</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">Ticker</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">info</span>
+        <span class="n">raw_news</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">news</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="n">stock_cache</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">info</span><span class="p">,</span> <span class="n">raw_news</span><span class="p">),</span> <span class="n">now</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">info</span><span class="p">,</span> <span class="n">raw_news</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># 야후 서버 타임아웃 / 장애 방어용</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;야후 파이낸스 API 오류: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="index">
+<a class="viewcode-back" href="../../app.html#app.app.index">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders the main dashboard page.</span>
+<span class="sd">    </span>
+<span class="sd">    Retrieves all saved stocks from the database and the global favorites list,</span>
+<span class="sd">    then renders the index template.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The rendered HTML content for the dashboard.</span>
+<span class="sd">    ---</span>
+<span class="sd">    responses:</span>
+<span class="sd">      200:</span>
+<span class="sd">        description: A successful dashboard rendering</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stocks</span> <span class="o">=</span> <span class="n">get_stock_repo</span><span class="p">()</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">favorites</span><span class="o">=</span><span class="n">favorites</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="search">
+<a class="viewcode-back" href="../../app.html#app.app.search">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles stock search and displays relevant news and information.</span>
+<span class="sd">    </span>
+<span class="sd">    Retrieves a stock ticker symbol from the query parameters, fetches its proxy-cached</span>
+<span class="sd">    data from Yahoo Finance, parses related news dates using a Strategy pattern, </span>
+<span class="sd">    and renders the search results page.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The rendered HTML content for the search page or an error message if the ticker is invalid.</span>
+<span class="sd">    ---</span>
+<span class="sd">    parameters:</span>
+<span class="sd">      - name: q</span>
+<span class="sd">        in: query</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">        description: The stock ticker symbol to search for</span>
+<span class="sd">    responses:</span>
+<span class="sd">      200:</span>
+<span class="sd">        description: The search results page or an error text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;q&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="c1"># Proxy Pattern을 통해 정보를 받아옴 (동기식 대기 단축)</span>
+    <span class="n">info</span><span class="p">,</span> <span class="n">raw_news</span> <span class="o">=</span> <span class="n">get_stock_data</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span> <span class="ow">or</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;currency&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;USD&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;유효한 미국 주식 티커를 입력해주세요.&quot;</span>
+
+    <span class="n">news</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">raw_news</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">pub_ts</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pubDate&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;displayTime&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="c1"># 전략 패턴을 활용하여 날짜 파싱</span>
+        <span class="n">pub_date</span> <span class="o">=</span> <span class="n">parse_date_strategy</span><span class="p">(</span><span class="n">pub_ts</span><span class="p">)</span>
+
+        <span class="n">summary_raw</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;summary&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">snippet</span> <span class="o">=</span> <span class="n">summary_raw</span><span class="p">[:</span><span class="mi">150</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">summary_raw</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">150</span> <span class="k">else</span> <span class="n">summary_raw</span>
+
+        <span class="n">provider</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;provider&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;displayName&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">news</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span>     <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;snippet&quot;</span><span class="p">:</span>   <span class="n">snippet</span><span class="p">,</span>
+            <span class="s2">&quot;date&quot;</span><span class="p">:</span>      <span class="n">pub_date</span><span class="p">,</span>
+            <span class="s2">&quot;publisher&quot;</span><span class="p">:</span> <span class="n">provider</span><span class="p">,</span>
+            <span class="s2">&quot;url&quot;</span><span class="p">:</span>       <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;canonicalUrl&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">:</span>      <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;search.html&#39;</span><span class="p">,</span>
+                            <span class="n">name</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;longName&quot;</span><span class="p">),</span>
+                            <span class="n">price</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;currentPrice&quot;</span><span class="p">),</span>
+                            <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                            <span class="n">news</span><span class="o">=</span><span class="n">news</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="news_detail">
+<a class="viewcode-back" href="../../app.html#app.app.news_detail">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/news&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">news_detail</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redirects the user to an external news article URL.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        url (str, optional): The URL parameter passed in the query string.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        werkzeug.wrappers.Response: A redirect response to the specified URL.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        werkzeug.exceptions.BadRequest: If the URL parameter is missing.</span>
+<span class="sd">    ---</span>
+<span class="sd">    parameters:</span>
+<span class="sd">      - name: url</span>
+<span class="sd">        in: query</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">        description: The URL string of the news article to redirect</span>
+<span class="sd">    responses:</span>
+<span class="sd">      302:</span>
+<span class="sd">        description: Redirects to the target URL</span>
+<span class="sd">      400:</span>
+<span class="sd">        description: Bad Request if URL is missing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add">
+<a class="viewcode-back" href="../../app.html#app.app.add">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/add&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds a new stock to the database.</span>
+<span class="sd">    </span>
+<span class="sd">    Validates form submissions utilizing a Guard Clause pattern to ensure </span>
+<span class="sd">    no inputs are empty and that the parsed price is a valid numeric value.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The updated index page HTML containing the new stock.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        werkzeug.exceptions.BadRequest: If there is a missing field or invalid price format.</span>
+<span class="sd">    ---</span>
+<span class="sd">    consumes:</span>
+<span class="sd">      - application/x-www-form-urlencoded</span>
+<span class="sd">    parameters:</span>
+<span class="sd">      - name: symbol</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">        description: Ticker symbol.</span>
+<span class="sd">      - name: name</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">        description: Company name.</span>
+<span class="sd">      - name: price</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: number</span>
+<span class="sd">        required: true</span>
+<span class="sd">        description: Numeric price string.</span>
+<span class="sd">    responses:</span>
+<span class="sd">      200:</span>
+<span class="sd">        description: Updated dashboard HTML.</span>
+<span class="sd">      400:</span>
+<span class="sd">        description: Validation error.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
+    <span class="n">name</span>   <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+    <span class="n">price</span>  <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Guard Clause (방어막 패턴): 서버 측 입력값 이중 검증</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">symbol</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">price</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;필수 항목(symbol, name, price)이 누락되었습니다.&quot;</span><span class="p">)</span>
+        
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">price</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;잘못된 가격 형식입니다. 숫자를 입력해야 합니다.&quot;</span><span class="p">)</span>
+    
+    <span class="n">repo</span> <span class="o">=</span> <span class="n">get_stock_repo</span><span class="p">()</span>
+    <span class="n">repo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">parsed_price</span><span class="p">)</span>
+        
+    <span class="n">stocks</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">favorites</span><span class="o">=</span><span class="n">favorites</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="favorite_add">
+<a class="viewcode-back" href="../../app.html#app.app.favorite_add">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/favorite/add&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">favorite_add</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds a given news article to the global favorites list.</span>
+<span class="sd">    </span>
+<span class="sd">    Verifies that the article URL does not already exist in the favorites </span>
+<span class="sd">    list before appending it to prevent duplicates.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The updated index page HTML incorporating the new favorite article.</span>
+<span class="sd">    ---</span>
+<span class="sd">    consumes:</span>
+<span class="sd">      - application/x-www-form-urlencoded</span>
+<span class="sd">    parameters:</span>
+<span class="sd">      - name: url</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">      - name: title</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">      - name: snippet</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">      - name: date</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">      - name: publisher</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">    responses:</span>
+<span class="sd">      200:</span>
+<span class="sd">        description: Updated dashboard HTML.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="c1"># 중복 방지</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">url</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">favorites</span><span class="p">):</span>
+        <span class="n">favorites</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;url&quot;</span><span class="p">:</span>       <span class="n">url</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span>     <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;snippet&quot;</span><span class="p">:</span>   <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snippet&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;date&quot;</span><span class="p">:</span>      <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;publisher&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;publisher&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">})</span>
+    <span class="n">stocks</span> <span class="o">=</span> <span class="n">get_stock_repo</span><span class="p">()</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">favorites</span><span class="o">=</span><span class="n">favorites</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="favorite_delete">
+<a class="viewcode-back" href="../../app.html#app.app.favorite_delete">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/favorite/delete&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">favorite_delete</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Deletes a news article from the global favorites list.</span>
+<span class="sd">    </span>
+<span class="sd">    Uses list comprehension to filter out the specified article based on its URL.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The updated index page HTML after the article is removed.</span>
+<span class="sd">    ---</span>
+<span class="sd">    consumes:</span>
+<span class="sd">      - application/x-www-form-urlencoded</span>
+<span class="sd">    parameters:</span>
+<span class="sd">      - name: url</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">    responses:</span>
+<span class="sd">      200:</span>
+<span class="sd">        description: Updated dashboard HTML.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">favorites</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">favorites</span> <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">url</span><span class="p">]</span>
+    <span class="n">stocks</span> <span class="o">=</span> <span class="n">get_stock_repo</span><span class="p">()</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">favorites</span><span class="o">=</span><span class="n">favorites</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="delete">
+<a class="viewcode-back" href="../../app.html#app.app.delete">[문서]</a>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/delete&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Deletes a stock from the database using its symbol.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The updated index page HTML after the deletion.</span>
+<span class="sd">    ---</span>
+<span class="sd">    consumes:</span>
+<span class="sd">      - application/x-www-form-urlencoded</span>
+<span class="sd">    parameters:</span>
+<span class="sd">      - name: symbol</span>
+<span class="sd">        in: formData</span>
+<span class="sd">        type: string</span>
+<span class="sd">        required: true</span>
+<span class="sd">    responses:</span>
+<span class="sd">      200:</span>
+<span class="sd">        description: Updated dashboard HTML.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
+
+    <span class="n">repo</span> <span class="o">=</span> <span class="n">get_stock_repo</span><span class="p">()</span>
+    <span class="n">repo</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+
+    <span class="n">stocks</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
+    <span class="c1"># index 페이지로 리디렉션</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">favorites</span><span class="o">=</span><span class="n">favorites</span><span class="p">)</span></div>
+
+ 
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5001</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, TakSakong.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

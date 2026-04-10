@@ -1,0 +1,588 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app package &mdash; myInvesting 1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=25ffd669"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/translations.js?v=afa94a99"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+    <link rel="prev" title="myInvesting 공식 API 문서" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            myInvesting
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">app package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-app.app">app.app module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.add"><code class="docutils literal notranslate"><span class="pre">add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.close_connection"><code class="docutils literal notranslate"><span class="pre">close_connection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.delete"><code class="docutils literal notranslate"><span class="pre">delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.favorite_add"><code class="docutils literal notranslate"><span class="pre">favorite_add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.favorite_delete"><code class="docutils literal notranslate"><span class="pre">favorite_delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.get_db_connection"><code class="docutils literal notranslate"><span class="pre">get_db_connection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.get_stock_data"><code class="docutils literal notranslate"><span class="pre">get_stock_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.get_stock_repo"><code class="docutils literal notranslate"><span class="pre">get_stock_repo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.index"><code class="docutils literal notranslate"><span class="pre">index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.init_db"><code class="docutils literal notranslate"><span class="pre">init_db()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.news_detail"><code class="docutils literal notranslate"><span class="pre">news_detail()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.parse_date_strategy"><code class="docutils literal notranslate"><span class="pre">parse_date_strategy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.app.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-app.repository">app.repository module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.repository.StockRepository"><code class="docutils literal notranslate"><span class="pre">StockRepository</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.repository.StockRepository.conn"><code class="docutils literal notranslate"><span class="pre">StockRepository.conn</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.repository.StockRepository.add"><code class="docutils literal notranslate"><span class="pre">StockRepository.add()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.repository.StockRepository.create_table"><code class="docutils literal notranslate"><span class="pre">StockRepository.create_table()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.repository.StockRepository.delete"><code class="docutils literal notranslate"><span class="pre">StockRepository.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.repository.StockRepository.get_all"><code class="docutils literal notranslate"><span class="pre">StockRepository.get_all()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-app">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">myInvesting</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">app package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/app.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="app-package">
+<h1>app package<a class="headerlink" href="#app-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-app.app">
+<span id="app-app-module"></span><h2>app.app module<a class="headerlink" href="#module-app.app" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.add">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#add"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.add" title="Link to this definition"></a></dt>
+<dd><p>Adds a new stock to the database.</p>
+<p>Validates form submissions utilizing a Guard Clause pattern to ensure
+no inputs are empty and that the parsed price is a valid numeric value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The updated index page HTML containing the new stock.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+<dt class="field-odd">예외 발생<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>werkzeug.exceptions.BadRequest</strong> – If there is a missing field or invalid price format.</p>
+</dd>
+</dl>
+<p>—
+consumes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>application/x-www-form-urlencoded</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>-</em>) – symbol
+in: formData
+type: string
+required: true
+description: Ticker symbol.</p></li>
+<li><p><strong>name</strong> – name
+in: formData
+type: string
+required: true
+description: Company name.</p></li>
+<li><p><strong>name</strong> – price
+in: formData
+type: number
+required: true
+description: Numeric price string.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>responses:</dt><dd><dl class="simple">
+<dt>200:</dt><dd><p>description: Updated dashboard HTML.</p>
+</dd>
+<dt>400:</dt><dd><p>description: Validation error.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.close_connection">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">close_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#close_connection"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.close_connection" title="Link to this definition"></a></dt>
+<dd><p>Closes the database connection at the end of the request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exception</strong> (<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><em>Exception</em></a><em> | </em><em>None</em>) – Any exception that occurred during the request.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.delete">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#delete"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.delete" title="Link to this definition"></a></dt>
+<dd><p>Deletes a stock from the database using its symbol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The updated index page HTML after the deletion.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+<p>—
+consumes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>application/x-www-form-urlencoded</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>-</em>) – symbol
+in: formData
+type: string
+required: true</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>responses:</dt><dd><dl class="simple">
+<dt>200:</dt><dd><p>description: Updated dashboard HTML.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.favorite_add">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">favorite_add</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#favorite_add"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.favorite_add" title="Link to this definition"></a></dt>
+<dd><p>Adds a given news article to the global favorites list.</p>
+<p>Verifies that the article URL does not already exist in the favorites
+list before appending it to prevent duplicates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The updated index page HTML incorporating the new favorite article.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+<p>—
+consumes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>application/x-www-form-urlencoded</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>-</em>) – url
+in: formData
+type: string
+required: true</p></li>
+<li><p><strong>name</strong> – title
+in: formData
+type: string</p></li>
+<li><p><strong>name</strong> – snippet
+in: formData
+type: string</p></li>
+<li><p><strong>name</strong> – date
+in: formData
+type: string</p></li>
+<li><p><strong>name</strong> – publisher
+in: formData
+type: string</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>responses:</dt><dd><dl class="simple">
+<dt>200:</dt><dd><p>description: Updated dashboard HTML.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.favorite_delete">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">favorite_delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#favorite_delete"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.favorite_delete" title="Link to this definition"></a></dt>
+<dd><p>Deletes a news article from the global favorites list.</p>
+<p>Uses list comprehension to filter out the specified article based on its URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The updated index page HTML after the article is removed.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+<p>—
+consumes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>application/x-www-form-urlencoded</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>-</em>) – url
+in: formData
+type: string
+required: true</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>responses:</dt><dd><dl class="simple">
+<dt>200:</dt><dd><p>description: Updated dashboard HTML.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.get_db_connection">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">get_db_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#get_db_connection"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.get_db_connection" title="Link to this definition"></a></dt>
+<dd><p>Establishes or retrieves the SQLite database connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The active SQLite database connection for the current Flask app context.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection" title="(in Python v3.14)">sqlite3.Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.get_stock_data">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">get_stock_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#get_stock_data"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.get_stock_data" title="Link to this definition"></a></dt>
+<dd><p>Fetches stock data using a Proxy Caching Pattern.</p>
+<p>Reduces synchronous load times and external API calls to Yahoo Finance
+by caching results in-memory. Bypasses the cache entirely when in TESTING mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The stock ticker symbol.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>dict or None: The stock information dictionary.</p></li>
+<li><p>list: A list of related news articles.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.get_stock_repo">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">get_stock_repo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#get_stock_repo"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.get_stock_repo" title="Link to this definition"></a></dt>
+<dd><p>Retrieves an instance of StockRepository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A repository instance initialized with the current database connection.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#app.repository.StockRepository" title="app.repository.StockRepository">StockRepository</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.index">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#index"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.index" title="Link to this definition"></a></dt>
+<dd><p>Renders the main dashboard page.</p>
+<p>Retrieves all saved stocks from the database and the global favorites list,
+then renders the index template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The rendered HTML content for the dashboard.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+<p>—
+responses:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>200:</dt><dd><p>description: A successful dashboard rendering</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.init_db">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">init_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#init_db"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.init_db" title="Link to this definition"></a></dt>
+<dd><p>Initializes the database by creating necessary tables.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.news_detail">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">news_detail</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#news_detail"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.news_detail" title="Link to this definition"></a></dt>
+<dd><p>Redirects the user to an external news article URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The URL parameter passed in the query string.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>A redirect response to the specified URL.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>werkzeug.wrappers.Response</p>
+</dd>
+<dt class="field-even">예외 발생<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>werkzeug.exceptions.BadRequest</strong> – If the URL parameter is missing.</p>
+</dd>
+</dl>
+<p>—
+:param - name: url</p>
+<blockquote>
+<div><p>in: query
+type: string
+required: true
+description: The URL string of the news article to redirect</p>
+</div></blockquote>
+<dl class="simple">
+<dt>responses:</dt><dd><dl class="simple">
+<dt>302:</dt><dd><p>description: Redirects to the target URL</p>
+</dd>
+<dt>400:</dt><dd><p>description: Bad Request if URL is missing</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.parse_date_strategy">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">parse_date_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pub_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/app/app.html#parse_date_strategy"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.parse_date_strategy" title="Link to this definition"></a></dt>
+<dd><p>Parses a date string using the Strategy Pattern and Chain of Responsibility.</p>
+<p>Attempts to parse the publication date using several predefined formats. If all formatting
+strategies fail, it gracefully degrades by returning the first 10 characters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pub_ts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raw publication timestamp string.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>A parsed and formatted date string (YYYY-MM-DD), or the truncated original string
+if parsing is unresolvable.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.search">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#search"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.app.search" title="Link to this definition"></a></dt>
+<dd><p>Handles stock search and displays relevant news and information.</p>
+<p>Retrieves a stock ticker symbol from the query parameters, fetches its proxy-cached
+data from Yahoo Finance, parses related news dates using a Strategy pattern,
+and renders the search results page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The rendered HTML content for the search page or an error message if the ticker is invalid.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+<p>—
+:param - name: q</p>
+<blockquote>
+<div><p>in: query
+type: string
+required: true
+description: The stock ticker symbol to search for</p>
+</div></blockquote>
+<dl class="simple">
+<dt>responses:</dt><dd><dl class="simple">
+<dt>200:</dt><dd><p>description: The search results page or an error text</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-app.repository">
+<span id="app-repository-module"></span><h2>app.repository module<a class="headerlink" href="#module-app.repository" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="app.repository.StockRepository">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.repository.</span></span><span class="sig-name descname"><span class="pre">StockRepository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repository.html#StockRepository"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.repository.StockRepository" title="Link to this definition"></a></dt>
+<dd><p>기반 클래스: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A repository for handling database operations related to stocks.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.repository.StockRepository.conn">
+<span class="sig-name descname"><span class="pre">conn</span></span><a class="headerlink" href="#app.repository.StockRepository.conn" title="Link to this definition"></a></dt>
+<dd><p>The SQLite database connection object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection" title="(in Python v3.14)">sqlite3.Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="app.repository.StockRepository.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repository.html#StockRepository.add"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.repository.StockRepository.add" title="Link to this definition"></a></dt>
+<dd><p>Adds a new stock entry into the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The ticker symbol of the stock (e.g., ‘AAPL’).</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The full name of the company or asset.</p></li>
+<li><p><strong>price</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The current price of the stock.</p></li>
+</ul>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the stock was successfully added, False if the symbol already exists.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="app.repository.StockRepository.create_table">
+<span class="sig-name descname"><span class="pre">create_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repository.html#StockRepository.create_table"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.repository.StockRepository.create_table" title="Link to this definition"></a></dt>
+<dd><p>Creates the ‘stocks’ table if it does not already exist.</p>
+<p>This sets up the schema required for storing stock symbols, names, and prices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="app.repository.StockRepository.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repository.html#StockRepository.delete"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.repository.StockRepository.delete" title="Link to this definition"></a></dt>
+<dd><p>Deletes a stock entry from the database by its symbol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The ticker symbol of the stock to delete.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="app.repository.StockRepository.get_all">
+<span class="sig-name descname"><span class="pre">get_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repository.html#StockRepository.get_all"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#app.repository.StockRepository.get_all" title="Link to this definition"></a></dt>
+<dd><p>Retrieves all stored stocks from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of dictionaries, where each dictionary contains stock data
+(id, symbol, name, price).</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-app">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-app" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="myInvesting 공식 API 문서" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, TakSakong.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
